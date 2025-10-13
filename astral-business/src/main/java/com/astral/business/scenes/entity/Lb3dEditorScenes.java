@@ -14,7 +14,7 @@ import java.util.Date;
  * 场景zip压缩包信息表(Lb3dEditorScenes)表实体类
  */
 @Data
-@TableName("lb_3d_editor_scenes")
+@TableName("astral_3d_editor_scenes")
 public class Lb3dEditorScenes {
 
     //主键ID,UUID

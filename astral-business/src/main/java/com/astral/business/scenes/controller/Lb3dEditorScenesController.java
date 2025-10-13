@@ -5,6 +5,7 @@ import com.astral.business.scenes.entity.Lb3dEditorScenesExample;
 import com.astral.business.scenes.service.Lb3dEditorScenesExampleService;
 import com.astral.common.result.Result;
 import com.astral.common.utils.CommonUtils;
+import com.astral.common.utils.UpYunUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.astral.business.scenes.entity.Lb3dEditorScenes;
@@ -39,8 +40,8 @@ public class Lb3dEditorScenesController {
     @PostMapping("/add")
     public Result<?> post(@RequestBody Lb3dEditorScenes lb3dEditorScenes) {
         long count = lb3dEditorScenesService.count();
-        if (count > 500) {
-            return Result.error("共享项目场景数量已达上限（500个），不允许新增");
+        if (count > 2000) {
+            return Result.error("共享项目场景数量已达上限（2000个），不允许新增");
         }
         if (lb3dEditorScenesService.save(lb3dEditorScenes)) {
             return Result.success(lb3dEditorScenes);

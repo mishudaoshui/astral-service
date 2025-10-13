@@ -15,7 +15,7 @@ import java.util.Date;
  * 新建场景时的示例表(Lb3dEditorScenesExample)表实体类
  */
 @Data
-@TableName("lb_3d_editor_scenes_example")
+@TableName("astral_3d_editor_scenes_example")
 public class Lb3dEditorScenesExample {
 
     //主键ID,UUID

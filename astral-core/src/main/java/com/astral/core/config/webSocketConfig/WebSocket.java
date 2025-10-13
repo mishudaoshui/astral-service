@@ -2,8 +2,10 @@ package com.astral.core.config.webSocketConfig;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.websocket.*;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,6 +13,7 @@ import java.util.concurrent.*;
 
 @Component
 @Slf4j
+//@ServerEndpoint("/websocket")
 @ServerEndpoint("/sys/ws")
 public class WebSocket {
 
@@ -47,11 +50,12 @@ public class WebSocket {
 
     @OnMessage
     public void onMessage(Session session, ByteBuffer byteBuffer) {
-        System.out.println("收到心跳信息");
+        System.out.println("收到Ping消息");
         if (byteBuffer.remaining() == 1 && byteBuffer.get(0) == (byte) 0x9) {
             try {
                 byteBuffer.rewind();
                 session.getBasicRemote().sendBinary(ByteBuffer.wrap(new byte[]{0xA}));
+//                session.getBasicRemote().sendText("pong");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -83,6 +87,9 @@ public class WebSocket {
      * @param message
      */
     public void pushMessage(String userId, String message) {
+        if (StringUtils.isEmpty(userId)) {
+            return;
+        }
         Session session = sessionPool.get(userId);
         if (session != null && session.isOpen()) {
             try {

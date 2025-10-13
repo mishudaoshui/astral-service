@@ -9,11 +9,27 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileUtils {
-
     public static File convertFile(MultipartFile file) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
+        return convertFile(file,true);
+    }
+
+    public static File convertFile(MultipartFile file, boolean needTimestampSuffix) throws IOException {
+        String fileName = "";
+
+        if(needTimestampSuffix){
+            String originalFilename = file.getOriginalFilename();
+            int subIndex = originalFilename.lastIndexOf(".");
+            String fileExtension = originalFilename.substring(subIndex);
+            fileName = originalFilename.substring(0, subIndex) + "_" + System.currentTimeMillis() + fileExtension;
+        }else{
+            fileName = file.getOriginalFilename();
+        }
+
+        File convFile = new File(fileName);
         convFile.createNewFile();
         try (FileOutputStream fos = new FileOutputStream(convFile)) {
             fos.write(file.getBytes());
@@ -70,6 +86,29 @@ public class FileUtils {
         } finally {
             IOUtils.close(os);
             IOUtils.close(fis);
+        }
+    }
+
+    public static void deleteFolder(String folderPath) throws IOException {
+        Path path = Paths.get(folderPath);
+        if (Files.exists(path)) {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    if (exc == null) {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        throw exc;
+                    }
+                }
+            });
         }
     }
 

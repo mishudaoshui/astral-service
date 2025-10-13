@@ -26,26 +26,51 @@ public class FileUploadUtils {
         return defaultBaseDir;
     }
 
-
-
     public static final String upload(String baseDir, MultipartFile file) throws IOException{
+        return upload(baseDir, file,true);
+    }
+
+    public static final String upload(String baseDir, MultipartFile file, boolean needTimestampSuffix) throws IOException{
         int fileNamelength = Objects.requireNonNull(file.getOriginalFilename()).length();
         if (fileNamelength > FileUploadUtils.DEFAULT_FILE_NAME_LENGTH) {
             throw new RuntimeException("文件名长度超过限制");
         }
-//        String fileName = extractFilename(file);
-        String fileName = file.getOriginalFilename();
+
+        String fileName = "";
+        if(needTimestampSuffix){
+            String originalFilename = file.getOriginalFilename();
+            int subIndex = originalFilename.lastIndexOf(".");
+            String fileExtension = originalFilename.substring(subIndex);
+            fileName = originalFilename.substring(0, subIndex) + "_" + System.currentTimeMillis() + fileExtension;
+        }else{
+            fileName = file.getOriginalFilename();
+        }
+
         String absPath = getAbsoluteFile(baseDir, fileName).getAbsolutePath();
         file.transferTo(Paths.get(absPath));
         return getPathFileName(baseDir, fileName);
     }
 
-    public static final String upload(String baseDir, File file) throws IOException {
+    public static final String upload(String baseDir, File file) throws IOException{
+        return upload(baseDir, file,true);
+    }
+
+    public static final String upload(String baseDir, File file, boolean needTimestampSuffix) throws IOException {
         int fileNamelength = Objects.requireNonNull(file.getName()).length();
         if (fileNamelength > FileUploadUtils.DEFAULT_FILE_NAME_LENGTH) {
             throw new RuntimeException("文件名长度超过限制");
         }
-        String fileName = file.getName();
+
+        String fileName = "";
+        if(needTimestampSuffix){
+            String originalFilename = file.getName();
+            int subIndex = originalFilename.lastIndexOf(".");
+            String fileExtension = originalFilename.substring(subIndex);
+            fileName = originalFilename.substring(0, subIndex) + "_" + System.currentTimeMillis() + fileExtension;
+        }else{
+            fileName = file.getName();
+        }
+
         String absPath = getAbsoluteFile(baseDir, fileName).getAbsolutePath();
         Files.copy(file.toPath(), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
         return getPathFileName(baseDir, fileName);

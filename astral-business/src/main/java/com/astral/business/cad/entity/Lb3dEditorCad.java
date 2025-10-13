@@ -13,7 +13,7 @@ import java.util.Date;
  * (Lb3dEditorCad)表实体类
  */
 @Data
-@TableName("lb_3d_editor_cad")
+@TableName("astral_3d_editor_cad")
 public class Lb3dEditorCad {
 
     @TableId(type = IdType.AUTO)

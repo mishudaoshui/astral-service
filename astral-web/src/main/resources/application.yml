@@ -58,6 +58,11 @@ astral:
   uploadDir: "D:/java/astral-service/static"
   # 又拍云资源目录
 #  uploadDir: "/static"
+revit:
+  address: "127.0.0.1"
+  port: "8081"
+  path: ""
+  timeout: 28800
 upyun:
   bucket: ??
   operator: ??
