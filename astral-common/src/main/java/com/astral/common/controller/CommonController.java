@@ -68,6 +68,8 @@ public class CommonController {
                     imgPath = imgPath.substring(0, imgPath.length() - 1);
                 }
                 String filePath = AstralConfig.getUploadDir() + "/" + imgPath;
+                // 先将加号替换为URL编码形式，避免被转为空格
+                filePath = filePath.replaceAll("\\+", "%2B");
                 filePath = URLDecoder.decode(filePath, "UTF-8");
                 File file = new File(filePath);
                 if(!file.exists()){

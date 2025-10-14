@@ -5,18 +5,16 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 新建场景时的示例表(Lb3dEditorScenesExample)表实体类
+ * 场景zip压缩包信息表(Astral3DEditorScenes)表实体类
  */
 @Data
-@TableName("astral_3d_editor_scenes_example")
-public class Lb3dEditorScenesExample {
+@TableName("astral_3d_scenes")
+public class Astral3DScenes {
 
     //主键ID,UUID
     @TableId(type = IdType.ASSIGN_UUID)
@@ -53,7 +51,11 @@ public class Lb3dEditorScenesExample {
     @TableField("zipSize")
     private String zipSize;
 
-    //示例项目类型。0：Web3D-THREE  1：WebGIS-Cesium
+    //创建项目时来源于哪一个示例模板项目，null代表从空项目创建。（fk）
+    @TableField("exampleSceneId")
+    private String exampleSceneId;
+
+    //项目类型。0：Web3D-THREE  1：WebGIS-Cesium
     @TableField("projectType")
     private Integer projectType;
 

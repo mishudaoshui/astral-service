@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -15,9 +14,9 @@ import java.util.Date;
  * @author makejava
  * @since 2025-03-30 20:26:12
  */
-@TableName("lb_sys_user")
+@TableName("astral_sys_user")
 @Data
-public class LbSysUser extends Model<LbSysUser> {
+public class AstralSysUser extends Model<AstralSysUser> {
 
     @TableId
     private Long id;

@@ -1,59 +1,51 @@
-package com.astral.business.scenes.controller;
+package com.astral.system.controller;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.astral.common.result.Result;
+import com.astral.system.entity.AstralSysUser;
+import com.astral.system.service.AstralSysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.astral.business.scenes.entity.Lb3dEditorScenesExample;
-import com.astral.business.scenes.service.Lb3dEditorScenesExampleService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 新建场景时的示例表(Lb3dEditorScenesExample)表控制层
+ * (AstralSysUser)表控制层
+ *
+ * @author makejava
+ * @since 2025-03-30 20:26:10
  */
 @RestController
-@RequestMapping("/editor3d/sceneExample")
-public class Lb3dEditorScenesExampleController {
+@RequestMapping("/user")
+public class AstralSysUserController {
     /**
      * 服务对象
      */
-    @Autowired
-    private Lb3dEditorScenesExampleService lb3dEditorScenesExampleService;
+    @Resource
+    private AstralSysUserService astralSysUserService;
 
     /**
      * 新增
-     * @return
      */
-    @PostMapping
-    public Result<?> post(@RequestBody Lb3dEditorScenesExample lb3dEditorScenesExample) {
-        if (lb3dEditorScenesExampleService.save(lb3dEditorScenesExample)) {
-            return Result.success(lb3dEditorScenesExample);
-        } else {
-            return Result.error("新增失败");
-        }
-
+    @PostMapping("/createUser")
+    public Result<?> post(@RequestBody AstralSysUser astralSysUser) {
+        return Result.toAjax(astralSysUserService.save(astralSysUser));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getUserInfo/{id}")
     public Result<?> getOne(@PathVariable("id") String id) {
         try {
-            return Result.success(lb3dEditorScenesExampleService.getById(id));
+            return Result.success(astralSysUserService.getById(id));
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @GetMapping
+    @GetMapping("/getAllUser")
     public Result<?> getAll(HttpServletRequest request) {
         String fieldsStr = request.getParameter("fields");
         List<String> fields = StringUtils.hasLength(fieldsStr) ? Arrays.asList(fieldsStr.split(",")) : new ArrayList<>();
@@ -80,7 +72,7 @@ public class Lb3dEditorScenesExampleController {
                 return Result.error(e.getMessage());
             }
         }
-        QueryWrapper<Lb3dEditorScenesExample> queryWrapper = new QueryWrapper<Lb3dEditorScenesExample>();
+        QueryWrapper<AstralSysUser> queryWrapper = new QueryWrapper<AstralSysUser>();
         query.forEach((k, v) -> {
             String filedName = StringUtils.replace(k, ".", "__");
             if ("isnull".equals(filedName)) {
@@ -117,36 +109,39 @@ public class Lb3dEditorScenesExampleController {
                 return Result.error("Error: unused 'order' fields");
             }
         }
-        Page<Lb3dEditorScenesExample> page = new Page<>();
+        Page<AstralSysUser> page = new Page<>();
         page.setSize(limit);
         page.setCurrent(offset / limit + 1);
         if (!CollectionUtils.isEmpty(fields)) {
             queryWrapper.select(fields);
         }
         try {
-            Page<Lb3dEditorScenesExample> resultPage = lb3dEditorScenesExampleService.page(page, queryWrapper);
-            long count = lb3dEditorScenesExampleService.count(queryWrapper);
-            JSONObject result = new JSONObject();
-            result.put("items", resultPage.getRecords());
-            result.put("current", offset + 1);
-            result.put("pageSize", limit);
-            result.put("pages", (count + limit - 1) / limit);
-            result.put("total", count);
-            return Result.success(result);
+            return Result.success(astralSysUserService.page(page, queryWrapper));
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @PutMapping("/{id}")
-    public Result<?> put(@PathVariable("id") String id, @RequestBody Lb3dEditorScenesExample lb3dEditorScenesExample) {
-        lb3dEditorScenesExample.setId(id);
-        return Result.toAjax(lb3dEditorScenesExampleService.updateById(lb3dEditorScenesExample));
+    @PutMapping("/updateUser/{id}")
+    public Result<?> put(@PathVariable("id") Long id, @RequestBody AstralSysUser astralSysUser) {
+        astralSysUser.setId(id);
+        return Result.toAjax(astralSysUserService.updateById(astralSysUser));
     }
 
-    @DeleteMapping("/{id}")
-    public Result<?> delete(@PathVariable("id") String id) {
-        return Result.toAjax(lb3dEditorScenesExampleService.removeById(id));
+    @DeleteMapping("/delUser/{id}")
+    public Result<?> delete(@PathVariable("id") Long id) {
+        return Result.toAjax(astralSysUserService.removeById(id));
     }
+
+    @PostMapping("/login")
+    public Result<?> login(@RequestBody AstralSysUser astralSysUser) {
+        return astralSysUserService.doLogin(astralSysUser);
+    }
+
+    @PostMapping("/register")
+    public void register() {
+
+    }
+
 }
 

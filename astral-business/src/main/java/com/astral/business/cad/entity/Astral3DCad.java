@@ -10,11 +10,11 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * (Lb3dEditorCad)表实体类
+ * (Astral3DCad)表实体类
  */
 @Data
-@TableName("astral_3d_editor_cad")
-public class Lb3dEditorCad {
+@TableName("astral_3d_cad")
+public class Astral3DCad {
 
     @TableId(type = IdType.AUTO)
     private Long id;

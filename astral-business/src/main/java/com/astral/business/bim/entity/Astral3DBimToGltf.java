@@ -15,16 +15,15 @@ import org.apache.ibatis.type.JdbcType;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Map;
 
 /**
- * BIM模型轻量化(Lb3dEditorBimToGltf)表实体类
+ * BIM模型轻量化(Astral3DBimToGltf)表实体类
  */
 @Data
-@TableName(value = "astral_3d_editor_bim_to_gltf", autoResultMap = true)
+@TableName(value = "astral_3d_bim_to_gltf", autoResultMap = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Lb3dEditorBimToGltf implements Serializable{
+public class Astral3DBimToGltf implements Serializable{
 
     @TableId(type = IdType.AUTO)
     private Long id;

@@ -2,7 +2,7 @@ package com.astral.system.service;
 
 import com.astral.common.result.Result;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.astral.system.entity.LbSysUser;
+import com.astral.system.entity.AstralSysUser;
 
 /**
  * (LbSysUser)表服务接口
@@ -10,9 +10,9 @@ import com.astral.system.entity.LbSysUser;
  * @author makejava
  * @since 2025-03-30 20:26:13
  */
-public interface LbSysUserService extends IService<LbSysUser> {
+public interface AstralSysUserService extends IService<AstralSysUser> {
 
-    Result<?> doLogin(LbSysUser lbSysUser);
+    Result<?> doLogin(AstralSysUser astralSysUser);
 
     void register(String username, String password);
 

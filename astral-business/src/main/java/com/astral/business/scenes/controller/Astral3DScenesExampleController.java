@@ -1,77 +1,56 @@
 package com.astral.business.scenes.controller;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.astral.business.scenes.entity.Lb3dEditorScenesExample;
-import com.astral.business.scenes.service.Lb3dEditorScenesExampleService;
 import com.astral.common.result.Result;
-import com.astral.common.utils.CommonUtils;
-import com.astral.common.utils.UpYunUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.astral.business.scenes.entity.Lb3dEditorScenes;
-import com.astral.business.scenes.service.Lb3dEditorScenesService;
+import com.astral.business.scenes.entity.Astral3DScenesExample;
+import com.astral.business.scenes.service.Astral3DScenesExampleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 场景zip压缩包信息表(Lb3dEditorScenes)表控制层
+ * 新建场景时的示例表(Astral3DScenesExample)表控制层
  */
 @RestController
-@RequestMapping("/editor3d/scenes")
-public class Lb3dEditorScenesController {
+@RequestMapping("/editor3d/sceneExample")
+public class Astral3DScenesExampleController {
     /**
      * 服务对象
      */
     @Autowired
-    private Lb3dEditorScenesService lb3dEditorScenesService;
-
-    @Autowired
-    private Lb3dEditorScenesExampleService lb3dEditorScenesExampleService;
+    private Astral3DScenesExampleService astral3DScenesExampleService;
 
     /**
      * 新增
+     * @return
      */
-    @PostMapping("/add")
-    public Result<?> post(@RequestBody Lb3dEditorScenes lb3dEditorScenes) {
-        long count = lb3dEditorScenesService.count();
-        if (count > 2000) {
-            return Result.error("共享项目场景数量已达上限（2000个），不允许新增");
-        }
-        if (lb3dEditorScenesService.save(lb3dEditorScenes)) {
-            return Result.success(lb3dEditorScenes);
+    @PostMapping
+    public Result<?> post(@RequestBody Astral3DScenesExample lb3dEditorScenesExample) {
+        if (astral3DScenesExampleService.save(lb3dEditorScenesExample)) {
+            return Result.success(lb3dEditorScenesExample);
         } else {
             return Result.error("新增失败");
         }
+
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public Result<?> getOne(@PathVariable("id") String id) {
         try {
-            Lb3dEditorScenes scenes = lb3dEditorScenesService.getById(id);
-            if (Objects.isNull(scenes)) {
-                return Result.error("场景不存在");
-            }
-            if ((StringUtils.isEmpty(scenes.getZip()) || StringUtils.isEmpty(scenes.getCoverPicture()))
-                    && !StringUtils.isEmpty(scenes.getExampleSceneId())) {
-                Lb3dEditorScenesExample scenesExample = lb3dEditorScenesExampleService.getById(scenes.getExampleSceneId());
-                if (Objects.nonNull(scenesExample)) {
-                    scenes.setZip(scenesExample.getZip());
-                    scenes.setCoverPicture(scenesExample.getCoverPicture());
-                }
-            }
-            return Result.success(scenes);
+            return Result.success(astral3DScenesExampleService.getById(id));
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @GetMapping("/getAll")
+    @GetMapping
     public Result<?> getAll(HttpServletRequest request) {
         String fieldsStr = request.getParameter("fields");
         List<String> fields = StringUtils.hasLength(fieldsStr) ? Arrays.asList(fieldsStr.split(",")) : new ArrayList<>();
@@ -98,7 +77,7 @@ public class Lb3dEditorScenesController {
                 return Result.error(e.getMessage());
             }
         }
-        QueryWrapper<Lb3dEditorScenes> queryWrapper = new QueryWrapper<Lb3dEditorScenes>();
+        QueryWrapper<Astral3DScenesExample> queryWrapper = new QueryWrapper<Astral3DScenesExample>();
         query.forEach((k, v) -> {
             String filedName = StringUtils.replace(k, ".", "__");
             if ("isnull".equals(filedName)) {
@@ -135,15 +114,15 @@ public class Lb3dEditorScenesController {
                 return Result.error("Error: unused 'order' fields");
             }
         }
-        Page<Lb3dEditorScenes> page = new Page<>();
+        Page<Astral3DScenesExample> page = new Page<>();
         page.setSize(limit);
         page.setCurrent(offset / limit + 1);
         if (!CollectionUtils.isEmpty(fields)) {
             queryWrapper.select(fields);
         }
         try {
-            Page<Lb3dEditorScenes> resultPage = lb3dEditorScenesService.page(page, queryWrapper);
-            long count = lb3dEditorScenesService.count(queryWrapper);
+            Page<Astral3DScenesExample> resultPage = astral3DScenesExampleService.page(page, queryWrapper);
+            long count = astral3DScenesExampleService.count(queryWrapper);
             JSONObject result = new JSONObject();
             result.put("items", resultPage.getRecords());
             result.put("current", offset + 1);
@@ -156,41 +135,15 @@ public class Lb3dEditorScenesController {
         }
     }
 
-    @PutMapping("/update/{id}")
-    public Result<?> put(@PathVariable("id") String id, @RequestBody Lb3dEditorScenes lb3dEditorScenes) {
-        Lb3dEditorScenes oldScenes = lb3dEditorScenesService.getById(id);
-        if (oldScenes != null) {
-            String zip = oldScenes.getZip();
-            if (StringUtils.hasLength(zip)) {
-                // 删除文件父级的文件夹及其下所有文件
-
-                String folder = zip.substring(0, zip.lastIndexOf("/"));
-                if (!CommonUtils.deleteFile(folder)) {
-                    throw new RuntimeException(folder + " 删除文件失败");
-                }
-            }
-            String oldCoverPicture = oldScenes.getCoverPicture();
-            if (StringUtils.hasLength(oldCoverPicture)) {
-                // 判断封面图是否变更
-                if (!oldCoverPicture.equals(lb3dEditorScenes.getCoverPicture())) {
-                    if (!CommonUtils.deleteFile(oldCoverPicture)) {
-                        throw new RuntimeException(oldCoverPicture + " 删除文件失败");
-                    }
-                }
-            }
-        }
-        lb3dEditorScenes.setId(id);
-        boolean b = lb3dEditorScenesService.updateById(lb3dEditorScenes);
-        if (b) {
-            return Result.success(lb3dEditorScenes);
-        } else {
-            return Result.error("更新失败");
-        }
+    @PutMapping("/{id}")
+    public Result<?> put(@PathVariable("id") String id, @RequestBody Astral3DScenesExample lb3dEditorScenesExample) {
+        lb3dEditorScenesExample.setId(id);
+        return Result.toAjax(astral3DScenesExampleService.updateById(lb3dEditorScenesExample));
     }
 
-    @DeleteMapping("/del/{id}")
-    public Result<?> delete(@PathVariable String id) {
-        return Result.toAjax(lb3dEditorScenesService.removeById(id));
+    @DeleteMapping("/{id}")
+    public Result<?> delete(@PathVariable("id") String id) {
+        return Result.toAjax(astral3DScenesExampleService.removeById(id));
     }
 }
 

@@ -13,7 +13,7 @@ public class RvtConversionResult {
 
     private String conversionStatus;
 
-    private Lb3dEditorBimToGltf item;
+    private Astral3DBimToGltf item;
 
     private BigDecimal process;
 

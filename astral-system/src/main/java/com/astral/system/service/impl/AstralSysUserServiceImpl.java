@@ -5,12 +5,11 @@ import com.astral.common.utils.JwtUtil;
 import com.astral.system.entity.vo.LoginResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.astral.system.mapper.LbSysUserMapper;
-import com.astral.system.entity.LbSysUser;
-import com.astral.system.service.LbSysUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.astral.system.mapper.AstralSysUserMapper;
+import com.astral.system.entity.AstralSysUser;
+import com.astral.system.service.AstralSysUserService;
+import lombok.val;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -18,16 +17,16 @@ import java.util.Objects;
  * (LbSysUser)表服务实现类
  */
 @Service("lbSysUserService")
-public class LbSysUserServiceImpl extends ServiceImpl<LbSysUserMapper, LbSysUser> implements LbSysUserService {
+public class AstralSysUserServiceImpl extends ServiceImpl<AstralSysUserMapper, AstralSysUser> implements AstralSysUserService {
 
     @Override
-    public Result<?> doLogin(LbSysUser lbSysUser) {
+    public Result<?> doLogin(AstralSysUser lbSysUser) {
         String username = lbSysUser.getUsername();
         String password = lbSysUser.getPassword();
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             return Result.error("用户名或密码不能为空！");
         }
-        LbSysUser user = this.getOne(new LambdaQueryWrapper<LbSysUser>().eq(LbSysUser::getUsername, username));
+        val user = this.getOne(new LambdaQueryWrapper<AstralSysUser>().eq(AstralSysUser::getUsername, username));
         if (user == null) {
             return Result.error("错误: 用户名不存在！");
         }

@@ -14,7 +14,7 @@ public class ConversionResult {
 
     private String conversionStatus;
 
-    private Lb3dEditorCad item;
+    private Astral3DCad item;
 
     private String message;
 

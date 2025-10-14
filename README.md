@@ -3,7 +3,7 @@
 🌍
 *[简体中文](README.md)*
 
-基于`Java:8`和`SpringBoot:2.7.18`的 [Astral3DEditor](https://github.com/mlt131220/Astral3DEditor) 项目后端代码.
+基于`Java:8`和`SpringBoot:2.7.18`的 [Astral3D](https://github.com/mlt131220/Astral3D) 项目后端代码.
 
 ![Static Badge](https://img.shields.io/badge/Java-8-green)
 ![Static Badge](https://img.shields.io/badge/SpringBoot-2.7.18-8732D7)
@@ -14,8 +14,8 @@
    git clone https://github.com/yx8663/astral-service.git
 ```
 ### 配置
-* 数据库使用 MySQL，表结构数据文件位于： `static/sql/astral.sql`；
-* 配置文件路径： `astral-web/src/main/resources/application.yml`;
+* 数据库使用 MySQL，表结构数据文件位于： `static/sql/astral_3d.sql`；
+* 配置文件路径： `astral-web/src/main/resources/application-dev.yml`;
 * 修改配置文件下 `spring.datasource` 项为自己的数据库连接；
 * 修改配置文件下 `astral.uploadType` 项为自己使用的文件存储方式：`本地-local 又拍云-upyun`；
 * 修改配置文件下 `astral.uploadDir` 项为自己使用的文件存储方式对应的存储目录：

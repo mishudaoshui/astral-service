@@ -3,35 +3,26 @@ package com.astral.business.bim.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.astral.business.bim.entity.RvtConversionRequest;
 import com.astral.business.bim.entity.RvtConversionResult;
-import com.astral.business.cad.entity.ConversionResult;
-import com.astral.common.config.AstralConfig;
 import com.astral.common.result.Result;
 import com.astral.common.utils.CommonUtils;
-import com.astral.common.utils.FileUploadUtils;
-import com.astral.common.utils.UpYunUtil;
 import com.astral.core.config.webSocketConfig.RevitWsClient;
 import com.astral.core.config.webSocketConfig.WebSocket;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.astral.business.bim.entity.Lb3dEditorBimToGltf;
-import com.astral.business.bim.service.Lb3dEditorBimToGltfService;
+import com.astral.business.bim.entity.Astral3DBimToGltf;
+import com.astral.business.bim.service.Astral3DBimToGltfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.repository.query.Param;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.socket.WebSocketMessage;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,16 +36,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * BIM模型轻量化(Lb3dEditorBimToGltf)表控制层
+ * BIM模型轻量化(Astral3DBimToGltf)表控制层
  */
 @RestController
 @RequestMapping("/editor3d/bim2gltf")
-public class Lb3dEditorBimToGltfController {
+public class Astral3DBimToGltfController {
     /**
      * 服务对象
      */
     @Autowired
-    private Lb3dEditorBimToGltfService lb3dEditorBimToGltfService;
+    private Astral3DBimToGltfService astral3DEditorBimToGltfService;
 
     @Autowired
     private WebSocket wsocket;
@@ -99,8 +90,8 @@ public class Lb3dEditorBimToGltfController {
     }
 
     @PostMapping("/add")
-    public Result<?> post(@RequestBody Lb3dEditorBimToGltf lb3dEditorBimToGltf) {
-        return Result.toAjax(lb3dEditorBimToGltfService.save(lb3dEditorBimToGltf));
+    public Result<?> post(@RequestBody Astral3DBimToGltf lb3dEditorBimToGltf) {
+        return Result.toAjax(astral3DEditorBimToGltfService.save(lb3dEditorBimToGltf));
     }
 
     @PostMapping("/addAndConversion")
@@ -109,14 +100,14 @@ public class Lb3dEditorBimToGltfController {
         try {
             String jsonStr = JSONObject.toJSONString(reqMap);
             RvtConversionRequest op = JSONObject.parseObject(jsonStr, RvtConversionRequest.class);
-            Lb3dEditorBimToGltf v = JSONObject.parseObject(jsonStr, Lb3dEditorBimToGltf.class);
+            Astral3DBimToGltf v = JSONObject.parseObject(jsonStr, Astral3DBimToGltf.class);
             v.setOptions(null);
             v.setGltfFilePath("");
             // 添加记录到数据库
-            if (!lb3dEditorBimToGltfService.save(v)) {
+            if (!astral3DEditorBimToGltfService.save(v)) {
                 return Result.error("保存失败");
             }
-            final Lb3dEditorBimToGltf savedV = v;
+            final Astral3DBimToGltf savedV = v;
             // 启动异步转换任务
             CompletableFuture.runAsync(() -> {
                 String uName = request.getParameter("uname");
@@ -178,7 +169,7 @@ public class Lb3dEditorBimToGltfController {
                             CommonUtils.upload(uploadGltfDir, gltfFile);
                             savedV.setGltfFilePath(uploadGltfPath);
                             // 更新数据库
-                            lb3dEditorBimToGltfService.updateById(savedV);
+                            astral3DEditorBimToGltfService.updateById(savedV);
                             // 发送完成消息
                             JSONObject webSocketMsg = new JSONObject();
                             webSocketMsg.put("type", "bim2gltf");
@@ -193,7 +184,7 @@ public class Lb3dEditorBimToGltfController {
                             savedV.setConversionStatus(2);
                             savedV.setGltfFileSize(BigDecimal.valueOf(0));
                             // 更新数据库
-                            lb3dEditorBimToGltfService.updateById(savedV);
+                            astral3DEditorBimToGltfService.updateById(savedV);
                             // 发送失败消息
                             JSONObject webSocketMsg = new JSONObject();
                             webSocketMsg.put("type", "bim2gltf");
@@ -221,7 +212,7 @@ public class Lb3dEditorBimToGltfController {
     @GetMapping("/get/{id}")
     public Result<?> getOne(@PathVariable("id") String id) {
         try {
-            return Result.success(lb3dEditorBimToGltfService.getById(id));
+            return Result.success(astral3DEditorBimToGltfService.getById(id));
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -254,7 +245,7 @@ public class Lb3dEditorBimToGltfController {
                 return Result.error(e.getMessage());
             }
         }
-        QueryWrapper<Lb3dEditorBimToGltf> queryWrapper = new QueryWrapper<Lb3dEditorBimToGltf>();
+        QueryWrapper<Astral3DBimToGltf> queryWrapper = new QueryWrapper<Astral3DBimToGltf>();
         query.forEach((k, v) -> {
             String filedName = StringUtils.replace(k, ".", "__");
             if ("isnull".equals(filedName)) {
@@ -291,15 +282,15 @@ public class Lb3dEditorBimToGltfController {
                 return Result.error("Error: unused 'order' fields");
             }
         }
-        Page<Lb3dEditorBimToGltf> page = new Page<>();
+        Page<Astral3DBimToGltf> page = new Page<>();
         page.setSize(limit);
         page.setCurrent(offset / limit + 1);
         if (!CollectionUtils.isEmpty(fields)) {
             queryWrapper.select(fields);
         }
         try {
-            Page<Lb3dEditorBimToGltf> resultPage = lb3dEditorBimToGltfService.page(page, queryWrapper);
-            long count = lb3dEditorBimToGltfService.count(queryWrapper);
+            Page<Astral3DBimToGltf> resultPage = astral3DEditorBimToGltfService.page(page, queryWrapper);
+            long count = astral3DEditorBimToGltfService.count(queryWrapper);
             JSONObject result = new JSONObject();
             result.put("items", resultPage.getRecords());
             result.put("current", offset + 1);
@@ -307,21 +298,21 @@ public class Lb3dEditorBimToGltfController {
             result.put("pages", (count + limit - 1) / limit);
             result.put("total", count);
             return Result.success(result);
-//            return Result.success(lb3dEditorBimToGltfService.page(page, queryWrapper));
+//            return Result.success(astral3DEditorBimToGltfService.page(page, queryWrapper));
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
     @PutMapping("/update/{id}")
-    public Result<?> put(@PathVariable("id") Long id, @RequestBody Lb3dEditorBimToGltf lb3dEditorBimToGltf) {
+    public Result<?> put(@PathVariable("id") Long id, @RequestBody Astral3DBimToGltf lb3dEditorBimToGltf) {
         lb3dEditorBimToGltf.setId(id);
-        return Result.toAjax(lb3dEditorBimToGltfService.updateById(lb3dEditorBimToGltf));
+        return Result.toAjax(astral3DEditorBimToGltfService.updateById(lb3dEditorBimToGltf));
     }
 
     @DeleteMapping("/del/{id}")
     public Result<?> delete(@PathVariable("id") Long id) {
-        return Result.toAjax(lb3dEditorBimToGltfService.removeById(id));
+        return Result.toAjax(astral3DEditorBimToGltfService.removeById(id));
     }
 
     @PostMapping("/uploadRvt")

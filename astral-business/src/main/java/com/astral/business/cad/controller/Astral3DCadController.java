@@ -2,8 +2,8 @@ package com.astral.business.cad.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.astral.business.cad.entity.ConversionResult;
-import com.astral.business.cad.entity.Lb3dEditorCad;
-import com.astral.business.cad.service.Lb3dEditorCadService;
+import com.astral.business.cad.entity.Astral3DCad;
+import com.astral.business.cad.service.Astral3DCadService;
 import com.astral.common.result.Result;
 import com.astral.common.utils.CommonUtils;
 import com.astral.core.config.webSocketConfig.WebSocket;
@@ -22,18 +22,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
- * (Lb3dEditorCad)表控制层
+ * (Astral3DCad)表控制层
  */
 @RestController
 @RequestMapping("/editor3d/cad")
-public class Lb3dEditorCadController {
+public class Astral3DCadController {
 
     @Autowired
-    private Lb3dEditorCadService lb3dEditorCadService;
+    private Astral3DCadService astral3DCadService;
 
     @Autowired
     private WebSocket wsocket;
@@ -92,13 +91,13 @@ public class Lb3dEditorCadController {
 
         }
         // 更新数据库
-        Lb3dEditorCad cad = new Lb3dEditorCad();
+        Astral3DCad cad = new Astral3DCad();
         cad.setFilePath(dataPath);
         cad.setThumbnail(request.getParameter("thumbnail"));
         cad.setFileName(request.getParameter("fileName"));
         cad.setConversionStatus(conversionStatus);
         cad.setConverterFilePath(converterFilePath);
-        boolean saveResult = lb3dEditorCadService.save(cad);
+        boolean saveResult = astral3DCadService.save(cad);
         if (!saveResult) {
             return Result.error("保存数据失败！");
         }
@@ -177,7 +176,7 @@ public class Lb3dEditorCadController {
                 }
 
                 System.out.println("[cad] 转换完成，准备更新数据库: " + cad.getId());
-                boolean updateResult = lb3dEditorCadService.updateById(cad);
+                boolean updateResult = astral3DCadService.updateById(cad);
                 if (cad.getConversionStatus() == 1) {
                     if (updateResult) {
                         System.out.println("[cad] 转换成功，更新数据库成功！发送成功消息");
@@ -208,8 +207,8 @@ public class Lb3dEditorCadController {
     }
 
     @PostMapping("/add")
-    public Result<?> post(@RequestBody Lb3dEditorCad lb3dEditorCad) {
-        if (lb3dEditorCadService.save(lb3dEditorCad)) {
+    public Result<?> post(@RequestBody Astral3DCad lb3dEditorCad) {
+        if (astral3DCadService.save(lb3dEditorCad)) {
             return Result.success(lb3dEditorCad);
         } else {
             return Result.error("保存失败！");
@@ -219,7 +218,7 @@ public class Lb3dEditorCadController {
     @GetMapping("/{id}")
     public Result<?> getOne(@PathVariable("id") Long id) {
         try {
-            Lb3dEditorCad lb3dEditorCad = lb3dEditorCadService.getById(id);
+            Astral3DCad lb3dEditorCad = astral3DCadService.getById(id);
             return Result.success(lb3dEditorCad);
         } catch (Exception e) {
             return Result.error("保存失败->" + e.getMessage());
@@ -254,7 +253,7 @@ public class Lb3dEditorCadController {
                 return Result.error(e.getMessage());
             }
         }
-        QueryWrapper<Lb3dEditorCad> queryWrapper = new QueryWrapper<Lb3dEditorCad>();
+        QueryWrapper<Astral3DCad> queryWrapper = new QueryWrapper<Astral3DCad>();
         query.forEach((k, v) -> {
             String filedName = StringUtils.replace(k, ".", "__");
             if ("isnull".equals(filedName)) {
@@ -290,15 +289,15 @@ public class Lb3dEditorCadController {
                 return Result.error("Error: unused 'order' fields");
             }
         }
-        Page<Lb3dEditorCad> page = new Page<>();
+        Page<Astral3DCad> page = new Page<>();
         page.setSize(limit);
         page.setCurrent(offset / limit + 1);
         if (!CollectionUtils.isEmpty(fields)) {
             queryWrapper.select(fields);
         }
         try {
-            Page<Lb3dEditorCad> resultPage = lb3dEditorCadService.page(page, queryWrapper);
-            long count = lb3dEditorCadService.count(queryWrapper);
+            Page<Astral3DCad> resultPage = astral3DCadService.page(page, queryWrapper);
+            long count = astral3DCadService.count(queryWrapper);
             JSONObject result = new JSONObject();
             result.put("items", resultPage.getRecords());
             result.put("current", offset + 1);
@@ -313,14 +312,14 @@ public class Lb3dEditorCadController {
     }
 
     @PutMapping("/{id}")
-    public Result<?> put(@PathVariable("id") Long id, @RequestBody Lb3dEditorCad lb3dEditorCad) {
+    public Result<?> put(@PathVariable("id") Long id, @RequestBody Astral3DCad lb3dEditorCad) {
         lb3dEditorCad.setId(id);
-        return Result.toAjax(lb3dEditorCadService.updateById(lb3dEditorCad));
+        return Result.toAjax(astral3DCadService.updateById(lb3dEditorCad));
     }
 
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable("id") Long id) {
-        return Result.toAjax(lb3dEditorCadService.removeById(id));
+        return Result.toAjax(astral3DCadService.removeById(id));
     }
 }
 
