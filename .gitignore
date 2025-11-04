@@ -1,6 +1,4 @@
 .idea
 
-astral-web/src/main/resources/application-local-dev.yml
-
 static/tmp/*
 static/upload/*
