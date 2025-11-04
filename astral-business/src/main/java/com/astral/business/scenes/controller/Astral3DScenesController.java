@@ -139,8 +139,42 @@ public class Astral3DScenesController {
         if (!CollectionUtils.isEmpty(fields)) {
             queryWrapper.select(fields);
         }
+
         try {
             Page<Astral3DScenes> resultPage = astral3DScenesService.page(page, queryWrapper);
+
+            // 20251104 新增：封面兜底
+            List<Astral3DScenes> records = resultPage.getRecords();
+            if (!CollectionUtils.isEmpty(records)) {
+                // 需要兜底的 exampleSceneId 集合
+                Set<String> exampleIdsToFetch = records.stream()
+                        .filter(r -> !StringUtils.hasLength(r.getCoverPicture()) && r.getExampleSceneId() != null)
+                        .map(Astral3DScenes::getExampleSceneId)
+                        .collect(Collectors.toSet());
+
+                if (!CollectionUtils.isEmpty(exampleIdsToFetch)) {
+                    // 批量查询示例场景
+                    List<Astral3DScenesExample> examples = astral3DScenesExampleService.listByIds(exampleIdsToFetch);
+                    Map<String, String> id2Cover = examples.stream()
+                            .filter(Objects::nonNull)
+                            .filter(e -> StringUtils.hasLength(e.getCoverPicture()))
+                            .collect(Collectors.toMap(Astral3DScenesExample::getId, Astral3DScenesExample::getCoverPicture, (a, b) -> a));
+
+                    // 回填 coverPicture
+                    for (Astral3DScenes r : records) {
+                        if (!StringUtils.hasLength(r.getCoverPicture())) {
+                            String exId = r.getExampleSceneId();
+                            if (exId != null) {
+                                String fallbackCover = id2Cover.get(exId);
+                                if (StringUtils.hasLength(fallbackCover)) {
+                                    r.setCoverPicture(fallbackCover);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             long count = astral3DScenesService.count(queryWrapper);
             JSONObject result = new JSONObject();
             result.put("items", resultPage.getRecords());
