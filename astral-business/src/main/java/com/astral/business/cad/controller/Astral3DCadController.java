@@ -69,11 +69,10 @@ public class Astral3DCadController {
         if (!"dwg".equals(ext)) {
             conversionStatus = 1;
             String dxfUploadDir = "upload/cad/dwg2dxf/" + nowDateStr;
-            converterFilePath = dxfUploadDir + "/" + sanitizedFilename;
-            dataPath = converterFilePath;
-            // 无需转换，直接上传至又拍云
+            dataPath = dxfUploadDir + "/" + sanitizedFilename;
+            // 无需转换，直接上传
             try {
-                CommonUtils.upload(dxfUploadDir, file);
+                converterFilePath = CommonUtils.upload(dxfUploadDir, file);
             } catch (Exception e) {
                 return Result.error("上传失败，Error：" + e.getMessage());
             }
@@ -126,26 +125,26 @@ public class Astral3DCadController {
 
                     int exitCode = process.waitFor();
                     if (exitCode == 0) {
-                        // 转换成功，上传至又拍云
+                        // 转换成功，上传
                         try {
                             File dxfFile = new File(outputFile);
                             String dxfUploadDir = "upload/cad/dwg2dxf/" + nowDateStr;
-                            String dxfUploadPath = dxfUploadDir + "/" + dxfFile.getName();
-                            cad.setConverterFilePath(dxfUploadPath);
-                            System.out.println("[cad] 转换成功，准备上传至又拍云: " + dxfFile.getName());
+
+                            System.out.println("[cad] 转换成功，准备上传: " + dxfFile.getName());
                             try {
-                                CommonUtils.upload(dxfUploadDir, dxfFile);
+                                String dxfUploadPath = CommonUtils.upload(dxfUploadDir, dxfFile);
+                                cad.setConverterFilePath(dxfUploadPath);
                                 cad.setConversionStatus(1);
                             } catch (Exception e) {
-                                System.out.println("上传至又拍云失败，Error：" + e.getMessage());
+                                System.out.println("上传失败，Error：" + e.getMessage());
+                                cad.setConverterFilePath("");
                                 cad.setConversionStatus(2);
                                 JSONObject webSocketMsg = new JSONObject();
                                 webSocketMsg.put("type", "cad");
                                 webSocketMsg.put("subscriber", uname);
-                                webSocketMsg.put("data", new ConversionResult("failed", cad, "转换成功，但上传结果至又拍云失败！Error：" + e.getMessage()));
+                                webSocketMsg.put("data", new ConversionResult("failed", cad, "转换成功，但上传结果失败！Error：" + e.getMessage()));
                                 wsocket.sendMessage(uname, webSocketMsg.toJSONString());
                             }
-                            cad.setConversionStatus(1);
                         } catch (Exception e) {
                             System.out.println("failed to open file: " + e.getMessage());
                             cad.setConversionStatus(2);
